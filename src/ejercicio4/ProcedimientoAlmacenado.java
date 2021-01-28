@@ -20,23 +20,25 @@ public class ProcedimientoAlmacenado {
     }
     
     public static void ejecutarProcedimiento(){
+        
+               
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection connMysql=(Connection)DriverManager
 			.getConnection("jdbc:mysql://localhost/practica?allowMultiQueries=true"
 							,"root","root");
-
-            String d="3";
-            String sql="{ ? = call selectEscud (?) }";
+            
+            String dep="3";
+            
+            String sql="{ ? = call nombre_escud(?) }"; 
             
             CallableStatement llamada=connMysql.prepareCall(sql);
             
             llamada.registerOutParameter(1, Types.VARCHAR);
-            llamada.setInt(2, Integer.parseInt(d));
+            llamada.setInt(2, Integer.parseInt(dep));
             
-            llamada.executeUpdate(sql.toString());
-            System.out.println("Id Escuderia: "+llamada.getString(1));
-            
+            llamada.executeUpdate();
+            System.out.println("NOMBRE ESCUDERIA: "+llamada.getString(1));
             llamada.close();
             connMysql.close();
             
