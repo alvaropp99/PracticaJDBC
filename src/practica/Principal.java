@@ -5,10 +5,14 @@
  */
 package practica;
 
+import com.sun.org.apache.xerces.internal.dom.DocumentImpl;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -18,6 +22,25 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Scanner;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
 
 public class Principal {
     
@@ -32,7 +55,9 @@ public class Principal {
                     + "2. Modificar Tabla Escudería/Pilotos.\n"
                     + "3. Consulta Tablas.\n"
                     + "4. Procedimiento Almacenado.\n"
-                    + "5. Salir\n");
+                    + "5. Crear XML Escuderia/Pilotos\n"
+                    + "6. Leer e insertar XML tabla Escudería\n"
+                    + "7. Salir");
 
             o=sc.nextInt();
 
@@ -171,6 +196,44 @@ public class Principal {
                     break;
                     
                 case 5:
+                    int x;
+                    do{
+                        System.out.println("\n1. Crear XML Escudería"
+                                + "\n2. Crear XML Pilotos"
+                                + "\n3. Atrás");
+                        
+                        x=sc.nextInt();
+                        
+                        switch(x){
+                            case 1:
+                                crearXmlEscuderia();
+                                break;
+                            
+                            case 2:
+                                crearXmlPilotos();
+                                break;
+                                
+                            case 3:
+                                try{
+                                    Process pro=Runtime.getRuntime().exec("java PracticaADT/practica/Principal");
+                                    break;
+                                }catch(IOException er){
+                                    System.out.println(er.getMessage());
+                                }
+                                break;
+                                
+                            default:
+                                System.out.println("Opción no válida");
+                                break;
+                        }
+                    }while(x!=3);
+                    break;
+                    
+                case 6:
+                    insertarXML();
+                    break;
+                    
+                case 7:
                     System.out.println("Fin del Programa");
                     break;
                     
@@ -639,4 +702,184 @@ public class Principal {
             e.printStackTrace();
         }
     }
+    
+    public static void crearXmlEscuderia() {
+        try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connMysql = (Connection) DriverManager
+                    .getConnection("jdbc:mysql://localhost/practica?allowMultiQueries=true",
+                             "root", "root");
+
+            com.mysql.jdbc.Statement sentencia = (com.mysql.jdbc.Statement) connMysql.createStatement();
+
+            String consulta = "SELECT * FROM escuderia";
+
+            Statement statement=connMysql.createStatement();
+            ResultSet rs=statement.executeQuery(consulta);
+            
+            Document xmlDoc=buildEscuderiaXML(rs);
+            
+            File salida=new File("Escuderias.xml");
+            printDom(xmlDoc, salida);
+            
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+    
+    public static Document buildEscuderiaXML(ResultSet rs)throws Exception{
+        Document xmlDoc=new DocumentImpl();
+        
+        Element rootElem=xmlDoc.createElement("tabla_escuderias");
+        xmlDoc.appendChild(rootElem);
+        
+        while(rs.next()){
+            Element escud=xmlDoc.createElement("Escudería");
+            
+            Element escudId=xmlDoc.createElement("id_escud");
+            Element escudNombre=xmlDoc.createElement("nombre_escud");
+            
+            escudId.appendChild(xmlDoc.createTextNode(rs.getString("id_escud")));
+            escudNombre.appendChild(xmlDoc.createTextNode(rs.getString("nombre_escud")));
+            
+            escud.appendChild(escudId);
+            escud.appendChild(escudNombre);
+            
+            rootElem.appendChild(escud);
+        }
+        return xmlDoc;
+    }
+    
+    public static void printDom(Document xmlDoc, File salida)throws Exception{
+        OutputFormat outputFormat=new OutputFormat("XML","UTF-8",true);
+        FileWriter fileWriter=new FileWriter(salida);
+        
+        XMLSerializer serializer=new XMLSerializer(fileWriter,outputFormat);
+        
+        serializer.asDOMSerializer();
+        
+        serializer.serialize(xmlDoc.getDocumentElement());
+    }
+    
+    public static void crearXmlPilotos() {
+        try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connMysql = (Connection) DriverManager
+                    .getConnection("jdbc:mysql://localhost/practica?allowMultiQueries=true",
+                             "root", "root");
+
+            com.mysql.jdbc.Statement sentencia = (com.mysql.jdbc.Statement) connMysql.createStatement();
+
+            String consulta = "SELECT * FROM pilotos";
+
+            Statement statement=connMysql.createStatement();
+            ResultSet rs=statement.executeQuery(consulta);
+            
+            Document xmlDoc=buildPilotosXML(rs);
+            
+            File salida=new File("Pilotos.xml");
+            printDom(xmlDoc, salida);
+            
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+    
+    
+    public static Document buildPilotosXML(ResultSet rs)throws Exception{
+        Document xmlDoc=new DocumentImpl();
+        
+        Element rootElem=xmlDoc.createElement("tabla_pilotos");
+        xmlDoc.appendChild(rootElem);
+        
+        while(rs.next()){
+            Element pilot=xmlDoc.createElement("Piloto");
+            
+            Element pilotoId=xmlDoc.createElement("id_piloto");
+            Element pilotoNombre=xmlDoc.createElement("nombre_piloto");
+            Element pilotoApellido=xmlDoc.createElement("apellido_piloto");
+            Element escudId=xmlDoc.createElement("id_escud");
+            
+            pilotoId.appendChild(xmlDoc.createTextNode(rs.getString("id_piloto")));
+            pilotoNombre.appendChild(xmlDoc.createTextNode(rs.getString("nombre_piloto")));
+            pilotoApellido.appendChild(xmlDoc.createTextNode(rs.getString("apellido_piloto")));
+            escudId.appendChild(xmlDoc.createTextNode(rs.getString("id_escud")));
+            
+            pilot.appendChild(pilotoId);
+            pilot.appendChild(pilotoNombre);
+            pilot.appendChild(pilotoApellido);
+            pilot.appendChild(escudId);
+            
+            
+            rootElem.appendChild(pilot);
+        }
+        return xmlDoc;
+    }
+    
+    public static void insertarXML() {
+        try {
+            String escuderia = "Escuderias.xml";
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connMysql = (Connection) DriverManager
+                    .getConnection("jdbc:mysql://localhost/practica?allowMultiQueries=true",
+                             "root", "root");
+
+            com.mysql.jdbc.Statement sentencia = (com.mysql.jdbc.Statement) connMysql.createStatement();
+
+            String consulta = "INSERT INTO escuderia (id_escud,nombre_escud) VALUES(";
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            Document document = builder.parse(new File(escuderia));
+            document.getDocumentElement().normalize();
+
+            System.out.printf("Elemento raíz: %s %n", document.getDocumentElement().getNodeName());
+            NodeList escuderias = document.getElementsByTagName("Escudería");
+            System.out.printf("Total Escuderías: %d %n", escuderias.getLength());
+
+            for(int i=0;i<escuderias.getLength();i++){
+                Node escud=escuderias.item(i);
+                
+                if(escud.getNodeType()==Node.ELEMENT_NODE){
+                    Element element=(Element) escud;
+                    
+                    consulta=consulta.concat(element.getElementsByTagName("id_escud").item(0).getTextContent()+", ");
+                    System.out.println(element.getElementsByTagName("id_escud").item(0).getTextContent());
+                    
+                    consulta=consulta.concat("'"+element.getElementsByTagName("nombre_escud").item(0).getTextContent()+"'); ");
+                    System.out.println(element.getElementsByTagName("nombre_escud").item(0).getTextContent());
+                    
+                    System.out.println(consulta);
+                    sentencia.executeUpdate(consulta);
+                    
+                    consulta = "INSERT INTO escuderia (id_escud,nombre_escud) VALUES(";
+                }
+            }
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tabla_escuderias>
+    <Escudería>
+        <id_escud>1</id_escud>
+        <nombre_escud>MERCEDES</nombre_escud>
+    </Escudería>
+    <Escudería>
+        <id_escud>2</id_escud>
+        <nombre_escud>REDBULL </nombre_escud>
+    </Escudería>
+    <Escudería>
+        <id_escud>3</id_escud>
+        <nombre_escud>MCLAREN</nombre_escud>
+    </Escudería>
+    <Escudería>
+        <id_escud>4</id_escud>
+        <nombre_escud>FERRARI</nombre_escud>
+    </Escudería>
+    <Escudería>
+        <id_escud>5</id_escud>
+        <nombre_escud>REANULT</nombre_escud>
+    </Escudería>
+</tabla_escuderias>
