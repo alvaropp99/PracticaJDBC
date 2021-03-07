@@ -177,7 +177,6 @@ public class Principal {
                             case 3:
                                 try{
                                     Process pro=Runtime.getRuntime().exec("java PracticaADT/practica/Principal");
-                                    break;
                                 }catch(IOException er){
                                     System.out.println(er.getMessage());
                                 }
@@ -216,7 +215,6 @@ public class Principal {
                             case 3:
                                 try{
                                     Process pro=Runtime.getRuntime().exec("java PracticaADT/practica/Principal");
-                                    break;
                                 }catch(IOException er){
                                     System.out.println(er.getMessage());
                                 }
@@ -242,7 +240,7 @@ public class Principal {
                     System.out.println("Opción no válida");
                     break;
             }
-       }while(o!=5);
+       }while(o!=7);
     }
     
     public static void crearTablasMySQL() {
